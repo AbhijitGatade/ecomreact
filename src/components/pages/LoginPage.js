@@ -1,6 +1,7 @@
 import axios from 'axios'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import Cookies from 'universal-cookie';
 
 import '../../login.css'
 
@@ -22,16 +23,19 @@ export default function SignInPage() {
         }
         //console.log("Form data:",data);
         const regData =await axios.post('http://localhost:5000/api/auth/login', data, headers);
-        if(regData.data === "Wrong User Name")
+        if(regData.data.data.status === "fail")
         {
-            alert("wrong Username");
-        }
-        else if(regData.data === "Wrong Password")
-        {
-            alert("Wrong password");
+            alert("Invalid credentials");
         }
         else{
-            alert("Login success");
+            console.log(regData.data);
+            const cookies = new Cookies();
+            cookies.set('usertype', 'User', { path: '/' });            
+            cookies.set('userid', regData.data.data.data._id, { path: '/' });
+            cookies.set('name', regData.data.data.data.name, { path: '/' });
+            cookies.set('email', regData.data.data.data.email, { path: '/' });
+            cookies.set('mobileno', regData.data.data.data.mobileno, { path: '/' });
+            window.location.replace("/Cart");
         }
     }
 
@@ -39,7 +43,7 @@ export default function SignInPage() {
         <div className="text-center m-5-auto">
             <h2>Sign in to us</h2>            
                 <p>
-                    <label>Username or email address</label><br/>
+                    <label>Email</label><br/>
                     <input type="text" value={username} onChange={(event)=>{setUserName(event.target.value)}} required />
                 </p>
                 <p>

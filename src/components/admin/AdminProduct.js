@@ -1,15 +1,15 @@
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom'
 
 import '../../login.css'
-let imagecontent = "";
 
 export default function AdminProduct() {
 
     let history = new useHistory();
-
+    const [category,setcategory]=useState("Fashion");
     const [title,settitle]=useState("");
     const [description,setdescription]=useState("");
     const [imgcontent,setimgcontent]=useState("");
@@ -20,10 +20,27 @@ export default function AdminProduct() {
         'Content-Type': 'application/json;charset=UTF-8',
         "Access-Control-Allow-Origin": "*",
     }
+    let { id } = useParams();
+
+    useEffect(()=>{
+      if(id !== "0")
+      {
+        axios.get('http://localhost:5000/api/products/find/' + id)
+          .then((response) => {
+              let product = response.data.data.data;
+              setcategory(product.category);
+              settitle(product.title);
+              setdescription(product.description);
+              setmrp(product.mrp);
+              setprice(product.price);
+          })
+      }
+    }, []);
 
     const save = async(event) =>{
         event.preventDefault();
         const data={
+          category:category,
           title:title,
           description:description,
           imgcontent:imgcontent,
@@ -31,15 +48,22 @@ export default function AdminProduct() {
           mrp:mrp,
           price:price,
       }
-      console.log(data);
-      const regData =await axios.post('http://localhost:5000/api/products', data, headers);
-      console.log(regData.data);
-      if(regData.data.data.status === "success")
-      {
-          history.push("/AdminProducts");
+      if(id === "0"){
+        const regData =await axios.post('http://localhost:5000/api/products', data, headers);
+        console.log(regData.data);
+        if(regData.data.data.status === "success")
+        {
+            history.push("/AdminProducts");
+        }
+        else{
+            alert("Something went wrong")
+        }
       }
       else{
-          alert("Something went wrong")
+        axios.put('http://localhost:5000/api/products/' + id, data, headers)
+            .then((response) => {
+              history.push("/AdminProducts");
+            })
       }
     }
 
@@ -65,7 +89,7 @@ export default function AdminProduct() {
                 <input type="hidden" formControlName="id"></input>
                 <div class="form-group">
                     <label>Category <span>*</span></label>
-                    <select class="form-control">
+                    <select class="form-control" value={category} onChange={(event)=>{setcategory(event.target.value)}} >
                       <option value="Fashion">Fashion</option>
                       <option value="Automobile">Automobile</option>
                     </select>

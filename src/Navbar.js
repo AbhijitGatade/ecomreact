@@ -1,14 +1,65 @@
+import axios from "axios";
+import { useEffect, useRef, useState } from "react";
+import { useHistory } from "react-router-dom";
 import { Link } from "react-router-dom";
+import Cookies from 'universal-cookie';
 const Navbar = () => {
+    let history = new useHistory();
+    const cookies = new Cookies();
+    let usertype = "";
+
+    const [categories, setCategories] = useState([]);
+
+    useEffect(()=>{
+        usertype = cookies.get("usertype");
+        if(usertype !== "Admin")
+        {
+            document.getElementById("menuAdmin").style.display = "none";
+        }
+        else{
+            document.getElementById("menuAdmin").style.display = "inline";
+        }
+        if(usertype === "User")
+        {
+            document.getElementById("menuLogin").style.display = "none";
+            document.getElementById("menuOrders").style.display = "inline";
+            document.getElementById("menuLogout").style.display = "inline";
+            document.getElementById("divUser").innerText = "Hello " + cookies.get("name");
+        }
+        else{
+            document.getElementById("menuLogin").style.display = "inline";
+            document.getElementById("menuOrders").style.display = "none";
+            document.getElementById("menuLogout").style.display = "none";
+        }
+        axios.get('http://localhost:5000/api/categories')
+            .then((response) => {
+                setCategories(response.data.data.data);
+            });
+        var products = JSON.parse(localStorage.getItem("products"));
+        if(products != null)
+            document.getElementById("spnCount").innerText = products.length; 
+
+
+    }, []);
+
+    function logout(){
+        cookies.set('userid', '', { path: '/' });
+        cookies.set('name', '', { path: '/' });
+        cookies.set('email', '', { path: '/' });        
+        cookies.set('mobileno', '', { path: '/' });        
+        cookies.set('usertype', '', { path: '/' });
+        window.location.replace("/");
+    }
+
     return (  
         <header class="section-header">
         <section class="header-main border-bottom">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-xl-2 col-lg-3 col-md-12">
-                    <a href="#" class="brand-wrap">
+                    <Link to="/" class="brand-wrap">
                        <h2>Shop<span>ichi</span></h2>
-                    </a> 
+                    </Link> 
                 </div>
                 <div class="col-xl-6 col-lg-5 col-md-6">
                     <form action="#" class="search-header">
@@ -30,38 +81,37 @@ const Navbar = () => {
                 </div> 
                 <div class="col-xl-4 col-lg-4 col-md-6">
                     <div class="widgets-wrap float-md-right">
-                        <div class="widget-header mr-3">
-                        <Link to="/Login">  <a href="#" class="widget-view">
+                        <div class="widget-header mr-3" id="menuLogin">
+                             <Link to="/Login">  <a href="#" class="widget-view">
                                 <div class="icon-area">
                                     <i class="fa fa-user"></i>
-                                    <span class="notify">3</span>
                                 </div>
-                                 <small class="text">My profile</small>
+                                 <small class="text">Login</small>
                             </a></Link> 
                         </div>
-                        <div class="widget-header mr-3">
-                            <a href="#" class="widget-view">
-                                <div class="icon-area">
-                                    <i class="fa fa-comment-dots"></i>
-                                    <span class="notify">1</span>
-                                </div>
-                                <small class="text"> Message </small>
-                            </a>
-                        </div>
-                        <div class="widget-header mr-3">
-                            <a href="#" class="widget-view">
+                        <div class="widget-header mr-3" id="menuOrders">
+                            <Link to="/orders" class="widget-view">
                                 <div class="icon-area">
                                     <i class="fa fa-store"></i>
                                 </div>
                                 <small class="text"> Orders </small>
-                            </a>
+                            </Link>
                         </div>
                         <div class="widget-header">
-                            <a href="#" class="widget-view">
+                            <Link to="/cart" class="widget-view">
+                                <div class="icon-area">
+                                    <i class="fa fa-shopping-cart"></i>
+                                    <span id="spnCount" class="notify">0</span>
+                                </div>
+                                <small class="text"> Cart </small>
+                            </Link>
+                        </div>
+                        <div class="widget-header" id="menuLogout">
+                            <a href="#" onClick={logout} class="widget-view">
                                 <div class="icon-area">
                                     <i class="fa fa-shopping-cart"></i>
                                 </div>
-                                <small class="text"> Cart </small>
+                                <small class="text"> Logout </small>
                             </a>
                         </div>
                     </div> 
@@ -77,52 +127,37 @@ const Navbar = () => {
     
         <div class="collapse navbar-collapse" id="main_nav">
         <ul class="navbar-nav">
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#"> <i class="fa fa-bars text-muted mr-2"></i> Demo pages </a>
+            <li class="nav-item dropdown" id="menuAdmin">
+                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#"> <i class="fa fa-user text-muted mr-2"></i> Administration </a>
                 <div class="dropdown-menu dropdown-large">
                     <nav class="row">
-                        <div class="col-6">
-                            <a href="page-index-1.html">Home page 1</a>
-                            <a href="page-index-2.html">Home page 2</a>
-                            <a href="page-category.html">All category</a>
-                            <a href="page-listing-large.html">Listing list</a>
-                            <a href="page-listing-grid.html">Listing grid</a>
-                            <a href="page-shopping-cart.html">Shopping cart</a>
-                            <a href="page-detail-product.html">Product detail</a>
-                            <a href="page-content.html">Page content</a>
-                            <a href="page-user-login.html">Page login</a>
-                            <a href="page-user-register.html">Page register</a>
-                        </div>
-                        <div class="col-6">
-                            <a href="page-profile-main.html">Profile main</a>
-                            <a href="page-profile-orders.html">Profile orders</a>
-                            <a href="page-profile-seller.html">Profile seller</a>
-                            <a href="page-profile-wishlist.html">Profile wishlist</a>
-                            <a href="page-profile-setting.html">Profile setting</a>
-                            <a href="page-profile-address.html">Profile address</a>
-                            <a href="rtl-page-index-1.html">RTL home page</a>
-                            <a href="page-components.html" target="_blank">More components</a>
+                        <div class="col-12">
+                            <Link to="/AdminOrders">Orders</Link>
+                            <Link to="/AdminProducts">Products</Link>
+                            <Link to="/AdminProduct/0">Add Product</Link>
+                            <Link to="/AdminCategories">Categories</Link>
+                            <Link to="/AdminCategory/0">Add Category</Link>
+                            <Link to="/AdminUsers">Users</Link>
+
+                            <button onClick={logout}>Logout</button>
                         </div>
                     </nav> 
                 </div> 
             </li>
+            {categories.map((data, i) => {
+            return (
             <li class="nav-item">
-                <a class="nav-link" href="#">Ready to ship</a>
+                <Link to={"products/" + data._id } class="nav-link" href="#">{data.name}</Link>
             </li>
-            <li class="nav-item">
-            <a class="nav-link" href="#">Trade shows</a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link" href="#">Services</a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link" href="#">Sell with us</a>
-            </li>
+            )})}
         </ul>
         <ul class="navbar-nav ml-md-auto">
                 <li class="nav-item">
-                <a class="nav-link" href="#">Get the app</a>
-            </li>
+                    <a class="nav-link" id="divUser"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Get the app</a>
+                </li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="http://example.com" data-toggle="dropdown">English</a>
                 <div class="dropdown-menu dropdown-menu-right">

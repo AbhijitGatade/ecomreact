@@ -1,7 +1,8 @@
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom'
+import Cookies from 'universal-cookie';
 import { Redirect } from 'react-router-dom/cjs/react-router-dom.min';
 
 import '../../login.css'
@@ -10,7 +11,7 @@ export default function SignInPage() {
 
     let history = new useHistory();
     const [username,setUserName]=useState("");
-    const [password,setPassword]=useState("");
+    const [password,setPassword]=useState("");    
 
     const headers= {
         'Content-Type': 'application/json;charset=UTF-8',
@@ -27,7 +28,9 @@ export default function SignInPage() {
         const regData =await axios.post('http://localhost:5000/api/auth/adminlogin', data, headers);
         if(regData.data.data.status === "success")
         {
-            history.push("/AdminProducts");
+            const cookies = new Cookies();
+            cookies.set('usertype', 'Admin', { path: '/' });
+            window.location.replace("/AdminProducts");
         }
         else{
             alert("Invalid credentials");
